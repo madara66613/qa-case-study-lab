@@ -1,0 +1,43 @@
+import { expect, test } from "@playwright/test";
+
+test("renders the desktop QA dashboard", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "Desktop-only check");
+
+  await page.goto("/");
+
+  await expect(page.getByRole("heading", { name: "QA Case Study Lab" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "E-commerce Checkout" })).toBeVisible();
+  await expect(page.getByText("Checkout journey map")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "BUG-016" })).toBeVisible();
+});
+
+test("filters cases and creates a focused run", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "Desktop-only check");
+
+  await page.goto("/");
+
+  await page.getByPlaceholder("Search cases, bugs, notes...").fill("PayPal");
+  await expect(page.getByText("Place order with PayPal")).toBeVisible();
+  await expect(page.getByText("Declined card shows error message")).toBeHidden();
+
+  await page.getByRole("button", { name: "Run Tests" }).click();
+  await expect(page.getByText("Run #29")).toBeVisible();
+  await expect(
+    page.getByText("Focused run created from 1 visible test cases."),
+  ).toBeVisible();
+});
+
+test("mobile viewport does not create page-level horizontal overflow", async ({
+  page,
+}, testInfo) => {
+  test.skip(testInfo.project.name !== "mobile-chrome", "Mobile-only check");
+
+  await page.goto("/");
+
+  const metrics = await page.evaluate(() => ({
+    bodyScrollWidth: document.body.scrollWidth,
+    viewportWidth: window.innerWidth,
+  }));
+
+  expect(metrics.bodyScrollWidth).toBe(metrics.viewportWidth);
+});
