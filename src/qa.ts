@@ -10,6 +10,13 @@ import type {
 export type PriorityFilter = Priority | "All";
 export type StatusFilter = TestStatus | "All";
 
+export interface QualitySignals {
+  passRate: number;
+  releaseBlockers: number;
+  automationCandidates: number;
+  regressionDebt: number;
+}
+
 const priorityWeights: Record<Priority, number> = {
   P0: 4,
   P1: 3,
@@ -97,6 +104,37 @@ export function sortByRisk(testCases: TestCase[]) {
   );
 }
 
+export function findBugForTest(
+  testCaseId: string,
+  bugReports: BugReport[],
+) {
+  return bugReports.find((bug) => bug.linkedTestCaseId === testCaseId);
+}
+
+export function calculateQualitySignals(
+  testCases: TestCase[],
+  bugReports: BugReport[],
+): QualitySignals {
+  const summary = calculateSummary(testCases);
+  const passRate =
+    summary.executed === 0 ? 0 : Math.round((summary.passed / summary.executed) * 100);
+  const releaseBlockers = bugReports.filter(
+    (bug) => bug.priority === "P0" || bug.severity === "Critical",
+  ).length;
+  const automationCandidates = testCases.filter(
+    (testCase) =>
+      (testCase.type === "E2E" || testCase.type === "API") &&
+      (testCase.priority === "P0" || testCase.priority === "P1"),
+  ).length;
+
+  return {
+    passRate,
+    releaseBlockers,
+    automationCandidates,
+    regressionDebt: summary.failed + summary.blocked + summary.notRun,
+  };
+}
+
 export function generateAiSuggestions(
   bug: BugReport,
   testCases: TestCase[],
@@ -104,14 +142,26 @@ export function generateAiSuggestions(
   const linkedTest = testCases.find(
     (testCase) => testCase.id === bug.linkedTestCaseId,
   );
+  const affectedStage = linkedTest?.stage ?? "affected";
+  const scenario = linkedTest?.title.toLowerCase() ?? bug.title.toLowerCase();
+  const contractCheck =
+    bug.id === "BUG-016"
+      ? "Add API contract check for gateway decline reason before UI rendering."
+      : `Add API contract check for ${affectedStage.toLowerCase()} validation response before UI rendering.`;
+  const regressionFocus =
+    bug.id === "BUG-016"
+      ? "AVS and CVV mismatch"
+      : bug.type === "UI"
+        ? "slow network recovery"
+        : "boundary values";
   const failedP0Count = testCases.filter(
     (testCase) => testCase.status === "Failed" && testCase.priority === "P0",
   ).length;
 
   const suggestions = [
-    `Add assertion that the declined-card error is visible on ${bug.title.includes("Payment") ? "Payment" : "the affected"} step.`,
-    `Add API contract check for gateway decline reason before UI rendering.`,
-    `Add regression case for ${linkedTest?.stage ?? "affected"} stage with AVS and CVV mismatch.`,
+    `Add assertion that ${scenario} shows the expected user-facing state on ${affectedStage} step.`,
+    contractCheck,
+    `Add regression case for ${affectedStage} stage with ${regressionFocus}.`,
   ];
 
   if (failedP0Count > 0) {
@@ -150,25 +200,38 @@ export function buildReportMarkdown(
   bug: BugReport,
   summary: SummaryMetrics,
   highRiskTests: TestCase[],
+  adoptedSuggestions: string[] = [],
 ) {
   const topRisks = sortByRisk(highRiskTests)
     .slice(0, 3)
     .map((testCase) => `- ${testCase.id}: ${testCase.title}`)
     .join("\n");
+  const usedSuggestions =
+    adoptedSuggestions.length === 0
+      ? "- No suggestions adopted yet"
+      : adoptedSuggestions.map((suggestion) => `- ${suggestion}`).join("\n");
 
   return [
     "# QA Case Study Report",
     "",
-    `## Summary`,
+    "## Summary",
     `Executed: ${summary.executed}/${summary.total}`,
     `Passed: ${summary.passed}`,
     `Failed: ${summary.failed}`,
     `Blocked: ${summary.blocked}`,
+    `Not Run: ${summary.notRun}`,
     "",
-    `## Featured Bug`,
+    "## Featured Bug",
     `${bug.id}: ${bug.title}`,
+    `Severity: ${bug.severity}`,
+    `Priority: ${bug.priority}`,
+    `Environment: ${bug.environment}`,
+    `Linked test: ${bug.linkedTestCaseId}`,
     "",
-    `## Top Risks`,
+    "## Top Risks",
     topRisks,
+    "",
+    "## Adopted Suggestions",
+    usedSuggestions,
   ].join("\n");
 }

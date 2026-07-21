@@ -27,7 +27,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import {
-  bugReport,
+  bugReports,
   caseStudies,
   journeySteps,
   skillTags,
@@ -36,12 +36,15 @@ import {
 } from "./data";
 import {
   buildReportMarkdown,
+  calculateQualitySignals,
   calculateSummary,
   createSimulatedRun,
+  findBugForTest,
   filterTestCases,
   generateAiSuggestions,
   sortByRisk,
   type PriorityFilter,
+  type QualitySignals,
   type StatusFilter,
 } from "./qa";
 import type {
@@ -63,6 +66,8 @@ const statusFilters: StatusFilter[] = [
   "Blocked",
   "Not Run",
 ];
+
+const reportFileName = "qa-case-study-report.md";
 
 function App() {
   const [selectedCaseId, setSelectedCaseId] = useState("checkout");
@@ -90,11 +95,17 @@ function App() {
   const selectedCase =
     caseStudies.find((caseStudy) => caseStudy.id === selectedCaseId) ??
     caseStudies[0];
+  const selectedBug = findBugForTest(selectedTest.id, bugReports);
+  const inspectorBug = selectedBug ?? bugReports[0];
   const suggestions = useMemo(
-    () => generateAiSuggestions(bugReport, testCases),
-    [],
+    () => generateAiSuggestions(inspectorBug, testCases),
+    [inspectorBug],
   );
   const topRiskTests = useMemo(() => sortByRisk(testCases).slice(0, 4), []);
+  const qualitySignals = useMemo(
+    () => calculateQualitySignals(testCases, bugReports),
+    [],
+  );
 
   function runFocusedTests() {
     const nextRun = createSimulatedRun(runs, filteredTests);
@@ -105,7 +116,15 @@ function App() {
   }
 
   function exportReport() {
-    setReportPreview(buildReportMarkdown(bugReport, summary, topRiskTests));
+    const markdown = buildReportMarkdown(
+      inspectorBug,
+      summary,
+      topRiskTests,
+      adoptedSuggestions,
+    );
+
+    setReportPreview(markdown);
+    downloadMarkdownReport(reportFileName, markdown);
   }
 
   function toggleSuggestion(suggestion: string) {
@@ -137,6 +156,7 @@ function App() {
         <div className="workspace-grid">
           <div className="main-column">
             <JourneyMap journeySteps={journeySteps} summary={summary} />
+            <QualitySignalPanel signals={qualitySignals} />
             <TestCasePanel
               filteredTests={filteredTests}
               selectedTest={selectedTest}
@@ -150,7 +170,8 @@ function App() {
           </div>
 
           <Inspector
-            bug={bugReport}
+            bug={inspectorBug}
+            isLinkedToSelectedTest={selectedBug?.id === inspectorBug.id}
             selectedTest={selectedTest}
             suggestions={suggestions}
             adoptedSuggestions={adoptedSuggestions}
@@ -161,6 +182,23 @@ function App() {
       </section>
     </main>
   );
+}
+
+function downloadMarkdownReport(filename: string, content: string) {
+  if (typeof window === "undefined" || typeof URL.createObjectURL !== "function") {
+    return;
+  }
+
+  const blob = new Blob([content], { type: "text/markdown;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+
+  link.href = url;
+  link.download = filename;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
 }
 
 function IconRail() {
@@ -382,6 +420,50 @@ function JourneyMap({
   );
 }
 
+function QualitySignalPanel({ signals }: { signals: QualitySignals }) {
+  const items = [
+    {
+      label: "Pass rate",
+      value: `${signals.passRate}%`,
+      tone: signals.passRate >= 80 ? "success" : "warning",
+    },
+    {
+      label: "Release blockers",
+      value: signals.releaseBlockers,
+      tone: signals.releaseBlockers > 0 ? "danger" : "success",
+    },
+    {
+      label: "Automation candidates",
+      value: signals.automationCandidates,
+      tone: "info",
+    },
+    {
+      label: "Regression debt",
+      value: signals.regressionDebt,
+      tone: signals.regressionDebt > 4 ? "warning" : "success",
+    },
+  ];
+
+  return (
+    <section className="panel quality-panel" aria-label="Quality signals">
+      <div>
+        <div className="panel-title">Release quality signals</div>
+        <span className="panel-subtitle">
+          Risk snapshot generated from typed test and defect fixtures
+        </span>
+      </div>
+      <div className="quality-grid">
+        {items.map((item) => (
+          <div className={`quality-item quality-${item.tone}`} key={item.label}>
+            <span>{item.label}</span>
+            <strong>{item.value}</strong>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function TestCasePanel({
   filteredTests,
   selectedTest,
@@ -458,6 +540,12 @@ function TestCasePanel({
             </tr>
           </thead>
           <tbody>
+            {filteredTests.length === 0 ? (
+              <tr className="empty-row">
+                <td colSpan={7}>No test cases match the current filters.</td>
+              </tr>
+            ) : null}
+
             {filteredTests.map((testCase) => (
               <tr
                 className={testCase.id === selectedTest.id ? "is-active" : ""}
@@ -536,6 +624,7 @@ function RunIcon({ run }: { run: TestRun }) {
 
 function Inspector({
   bug,
+  isLinkedToSelectedTest,
   selectedTest,
   suggestions,
   adoptedSuggestions,
@@ -543,6 +632,7 @@ function Inspector({
   onToggleSuggestion,
 }: {
   bug: BugReport;
+  isLinkedToSelectedTest: boolean;
   selectedTest: TestCase;
   suggestions: string[];
   adoptedSuggestions: string[];
@@ -607,7 +697,9 @@ function Inspector({
         <div className="inspector-kicker">AI suggestions</div>
         <div className="suggestion-context">
           <TestTube2 size={18} />
-          Linked to {selectedTest.id}: {selectedTest.stage}
+          {isLinkedToSelectedTest
+            ? `Linked to ${selectedTest.id}: ${selectedTest.stage}`
+            : `Showing highest-risk defect; ${selectedTest.id} has no linked bug`}
         </div>
         <div className="suggestion-list">
           {suggestions.map((suggestion) => {
@@ -630,7 +722,7 @@ function Inspector({
       </section>
 
       {reportPreview && (
-        <section className="panel report-preview">
+        <section className="panel report-preview" aria-live="polite">
           <div className="inspector-kicker">Report preview</div>
           <pre>{reportPreview}</pre>
         </section>

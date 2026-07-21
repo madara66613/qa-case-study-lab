@@ -195,41 +195,112 @@ export const testCases: TestCase[] = [
   },
 ];
 
-export const bugReport: BugReport = {
-  id: "BUG-016",
-  title: "Error message not shown for declined card on Payment step",
-  severity: "Major",
-  priority: "P0",
-  type: "Functional",
-  reportedBy: "Denis Dacenko",
-  reportedOn: "Jul 21, 2026 10:18",
-  environment: "Chrome 126 / macOS 15",
-  linkedTestCaseId: "TC-041",
-  steps: [
-    "Go to Checkout > Payment step",
-    "Enter card number 4000 0000 0000 0002",
-    "Enter any future expiry date",
-    "Enter any valid CVV",
-    "Click Place Order",
-    "Observe the payment form",
-  ],
-  expected:
-    "An error message should be displayed: Your card was declined. Please try a different card.",
-  actual:
-    "No error message is shown. The button returns to enabled state and the user is not informed about the payment failure.",
-  evidence: [
-    {
-      label: "Screenshot_2026-07-21_10-18.png",
-      meta: "1440x1000, 320 KB",
-      kind: "screenshot",
-    },
-    {
-      label: "Console log",
-      meta: "3 errors, 2 warnings",
-      kind: "log",
-    },
-  ],
-};
+export const bugReports: BugReport[] = [
+  {
+    id: "BUG-016",
+    title: "Error message not shown for declined card on Payment step",
+    severity: "Major",
+    priority: "P0",
+    type: "Functional",
+    reportedBy: "Denis Dacenko",
+    reportedOn: "Jul 21, 2026 10:18",
+    environment: "Chrome 126 / macOS 15",
+    linkedTestCaseId: "TC-041",
+    steps: [
+      "Go to Checkout > Payment step",
+      "Enter card number 4000 0000 0000 0002",
+      "Enter any future expiry date",
+      "Enter any valid CVV",
+      "Click Place Order",
+      "Observe the payment form",
+    ],
+    expected:
+      "An error message should be displayed: Your card was declined. Please try a different card.",
+    actual:
+      "No error message is shown. The button returns to enabled state and the user is not informed about the payment failure.",
+    evidence: [
+      {
+        label: "Screenshot_2026-07-21_10-18.png",
+        meta: "1440x1000, 320 KB",
+        kind: "screenshot",
+      },
+      {
+        label: "Console log",
+        meta: "3 errors, 2 warnings",
+        kind: "log",
+      },
+    ],
+  },
+  {
+    id: "BUG-017",
+    title: "Past expiration date keeps payment form submittable",
+    severity: "Major",
+    priority: "P1",
+    type: "Functional",
+    reportedBy: "Denis Dacenko",
+    reportedOn: "Jul 21, 2026 09:47",
+    environment: "Firefox 128 / Windows 11",
+    linkedTestCaseId: "TC-038",
+    steps: [
+      "Go to Checkout > Payment step",
+      "Enter a valid card number",
+      "Enter an expiration date from the past",
+      "Enter any valid CVV",
+      "Click Place Order",
+    ],
+    expected:
+      "The form should block submission and show a clear expiration date validation message.",
+    actual:
+      "The field border changes color, but the order can still be submitted without an accessible error message.",
+    evidence: [
+      {
+        label: "Checkout_expiry_past_firefox.png",
+        meta: "1366x768, 214 KB",
+        kind: "screenshot",
+      },
+      {
+        label: "Network trace",
+        meta: "POST /payments attempted",
+        kind: "log",
+      },
+    ],
+  },
+  {
+    id: "BUG-018",
+    title: "Place order spinner can lock the Review step",
+    severity: "Minor",
+    priority: "P2",
+    type: "UI",
+    reportedBy: "Denis Dacenko",
+    reportedOn: "Jul 21, 2026 09:14",
+    environment: "Safari 18 / iOS Simulator",
+    linkedTestCaseId: "TC-036",
+    steps: [
+      "Go to Checkout > Review step",
+      "Throttle the network to Slow 3G",
+      "Click Place Order",
+      "Return to the tab after the spinner is visible",
+    ],
+    expected:
+      "The spinner should resolve to a success or actionable error state with a retry path.",
+    actual:
+      "The spinner stays visible for more than 30 seconds and the checkout controls remain disabled.",
+    evidence: [
+      {
+        label: "iOS_review_spinner.mov",
+        meta: "12 sec recording, 2.8 MB",
+        kind: "screenshot",
+      },
+      {
+        label: "Console log",
+        meta: "TimeoutError: payment intent polling",
+        kind: "log",
+      },
+    ],
+  },
+];
+
+export const bugReport: BugReport = bugReports[0];
 
 export const testRuns: TestRun[] = [
   {

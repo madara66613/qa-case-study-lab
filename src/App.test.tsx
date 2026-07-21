@@ -9,6 +9,7 @@ describe("QA Case Study Lab app", () => {
     expect(screen.getByText("QA Case Study Lab")).toBeInTheDocument();
     expect(screen.getAllByText("E-commerce Checkout").length).toBeGreaterThan(0);
     expect(screen.getByText("Checkout journey map")).toBeInTheDocument();
+    expect(screen.getByText("Release quality signals")).toBeInTheDocument();
     expect(screen.getByText("BUG-016")).toBeInTheDocument();
   });
 
@@ -33,6 +34,29 @@ describe("QA Case Study Lab app", () => {
     expect(screen.getByText("Run #29")).toBeInTheDocument();
     expect(
       screen.getByText("Focused run created from 12 visible test cases."),
+    ).toBeInTheDocument();
+  });
+
+  it("shows the linked bug report for the selected failed test", () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByText("Expiration date in the past"));
+
+    expect(screen.getByRole("heading", { name: "BUG-017" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Past expiration date keeps payment form submittable"),
+    ).toBeInTheDocument();
+  });
+
+  it("shows an empty table state when filters have no matches", () => {
+    render(<App />);
+
+    fireEvent.change(screen.getByPlaceholderText("Search cases, bugs, notes..."), {
+      target: { value: "no such checkout case" },
+    });
+
+    expect(
+      screen.getByText("No test cases match the current filters."),
     ).toBeInTheDocument();
   });
 });

@@ -2,7 +2,7 @@
 
 QA Case Study Lab is a portfolio dashboard for demonstrating practical QA, bug analysis, risk-based testing, and AI-assisted test design.
 
-The app presents a realistic e-commerce checkout case study: journey map, test case table, priority/status filters, latest test runs, selected bug report, evidence notes, AI-generated suggestions, and a markdown report preview.
+The app presents a realistic e-commerce checkout case study: journey map, test case table, priority/status filters, release quality signals, latest test runs, linked bug reports, evidence notes, AI-generated suggestions, and markdown report export.
 
 ![Design concept](docs/design-concept.png)
 
@@ -24,12 +24,13 @@ Hiring managers can quickly see that the candidate understands:
 - Interactive checkout QA dashboard
 - Case study navigation and skill tags
 - Journey map for checkout steps
+- Release quality signals calculated from test and defect data
 - Test case table with priority and status filtering
 - Search across test IDs, titles, status, type, stage, and owner
-- Bug report inspector with metadata, steps, evidence, expected result, and actual result
+- Linked bug report inspector with metadata, steps, evidence, expected result, and actual result
 - AI suggestion panel with adoptable actions
 - Simulated focused test runs
-- Markdown report preview
+- Markdown report preview and browser download
 - Unit and UI tests with Vitest and Testing Library
 - GitHub Actions CI workflow
 
@@ -88,7 +89,7 @@ src/
   App.tsx                      Main application composition and UI states
   App.css                      Product dashboard design system
   App.test.tsx                 Render and interaction tests
-  data.ts                      Case study, test case, run, and bug data
+  data.ts                      Case study, test case, run, and bug report data
   qa.ts                        Filtering, summary, risk, report, and suggestion logic
   qa.test.ts                   Domain logic tests
   types.ts                     Shared TypeScript types
@@ -100,13 +101,13 @@ e2e/
 
 - `npm run check` runs lint, typecheck, unit tests, e2e smoke tests, and build.
 - The dashboard is data-driven from typed fixtures.
-- QA metrics are calculated from test case status data rather than hardcoded in the UI.
+- QA metrics and release signals are calculated from test case and defect data rather than hardcoded in the UI.
 - AI suggestions are deterministic and testable, so the project works without an API key.
 - The design concept is included to show product/design process, not only code.
 
 ## CV Description
 
-QA Case Study Lab - built a React and TypeScript portfolio dashboard for an e-commerce checkout QA case study. Implemented risk-based test filtering, calculated QA metrics, bug report inspection, simulated test runs, deterministic AI test suggestions, unit tests, Playwright smoke tests, manual QA docs, and CI.
+QA Case Study Lab - built a React and TypeScript portfolio dashboard for an e-commerce checkout QA case study. Implemented risk-based test filtering, calculated QA metrics and release signals, linked bug report inspection, markdown report export, simulated test runs, deterministic AI test suggestions, unit tests, Playwright smoke tests, manual QA docs, and CI.
 
 ## Next Improvements
 

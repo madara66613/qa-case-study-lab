@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { bugReport, testCases, testRuns } from "./data";
+import { bugReport, bugReports, testCases, testRuns } from "./data";
 import {
   buildReportMarkdown,
+  calculateQualitySignals,
   calculateRiskScore,
   calculateSummary,
   createSimulatedRun,
+  findBugForTest,
   filterTestCases,
   generateAiSuggestions,
   sortByRisk,
@@ -65,15 +67,32 @@ describe("QA analytics", () => {
     expect(run.failed).toBe(1);
   });
 
+  it("finds a bug report linked to a selected test case", () => {
+    expect(findBugForTest("TC-038", bugReports)?.id).toBe("BUG-017");
+    expect(findBugForTest("TC-042", bugReports)).toBeUndefined();
+  });
+
+  it("calculates recruiter-friendly release quality signals", () => {
+    expect(calculateQualitySignals(testCases, bugReports)).toEqual({
+      passRate: 67,
+      releaseBlockers: 1,
+      automationCandidates: 2,
+      regressionDebt: 6,
+    });
+  });
+
   it("builds a compact markdown report", () => {
     const report = buildReportMarkdown(
       bugReport,
       calculateSummary(testCases),
       testCases,
+      ["Add regression case for Payment stage"],
     );
 
     expect(report).toContain("# QA Case Study Report");
     expect(report).toContain("BUG-016");
     expect(report).toContain("TC-041");
+    expect(report).toContain("Not Run: 3");
+    expect(report).toContain("Add regression case for Payment stage");
   });
 });
