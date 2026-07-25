@@ -17,6 +17,12 @@ export interface QualitySignals {
   regressionDebt: number;
 }
 
+export interface ReleaseDecision {
+  status: "GO" | "CONDITIONAL" | "NO-GO";
+  tone: "success" | "warning" | "danger";
+  reason: string;
+}
+
 const priorityWeights: Record<Priority, number> = {
   P0: 4,
   P1: 3,
@@ -135,6 +141,40 @@ export function calculateQualitySignals(
   };
 }
 
+export function calculateReleaseDecision(
+  signals: QualitySignals,
+): ReleaseDecision {
+  if (signals.releaseBlockers > 0) {
+    return {
+      status: "NO-GO",
+      tone: "danger",
+      reason: `${signals.releaseBlockers} release blocker must be resolved before production.`,
+    };
+  }
+
+  if (signals.passRate < 80) {
+    return {
+      status: "NO-GO",
+      tone: "danger",
+      reason: `Pass rate is ${signals.passRate}%, below the 80% release threshold.`,
+    };
+  }
+
+  if (signals.regressionDebt > 0) {
+    return {
+      status: "CONDITIONAL",
+      tone: "warning",
+      reason: `${signals.regressionDebt} regression items still need triage.`,
+    };
+  }
+
+  return {
+    status: "GO",
+    tone: "success",
+    reason: "No release blockers or regression debt remain.",
+  };
+}
+
 export function generateAiSuggestions(
   bug: BugReport,
   testCases: TestCase[],
@@ -227,6 +267,11 @@ export function buildReportMarkdown(
     `Priority: ${bug.priority}`,
     `Environment: ${bug.environment}`,
     `Linked test: ${bug.linkedTestCaseId}`,
+    "",
+    "## Release Recommendation",
+    bug.priority === "P0" || bug.severity === "Critical"
+      ? "NO-GO: resolve the featured release blocker before production."
+      : "CONDITIONAL: complete regression triage before production.",
     "",
     "## Top Risks",
     topRisks,

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { bugReport, bugReports, testCases, testRuns } from "./data";
 import {
   buildReportMarkdown,
+  calculateReleaseDecision,
   calculateQualitySignals,
   calculateRiskScore,
   calculateSummary,
@@ -81,6 +82,16 @@ describe("QA analytics", () => {
     });
   });
 
+  it("turns quality signals into an explicit release decision", () => {
+    expect(
+      calculateReleaseDecision(calculateQualitySignals(testCases, bugReports)),
+    ).toEqual({
+      status: "NO-GO",
+      tone: "danger",
+      reason: "1 release blocker must be resolved before production.",
+    });
+  });
+
   it("builds a compact markdown report", () => {
     const report = buildReportMarkdown(
       bugReport,
@@ -93,6 +104,7 @@ describe("QA analytics", () => {
     expect(report).toContain("BUG-016");
     expect(report).toContain("TC-041");
     expect(report).toContain("Not Run: 3");
+    expect(report).toContain("NO-GO: resolve the featured release blocker");
     expect(report).toContain("Add regression case for Payment stage");
   });
 });

@@ -9,6 +9,7 @@ test("renders the desktop QA dashboard", async ({ page }, testInfo) => {
   await expect(page.getByRole("heading", { name: "E-commerce Checkout" })).toBeVisible();
   await expect(page.getByText("Checkout journey map")).toBeVisible();
   await expect(page.getByText("Release quality signals")).toBeVisible();
+  await expect(page.getByText("NO-GO")).toBeVisible();
   await expect(page.getByRole("heading", { name: "BUG-016" })).toBeVisible();
 });
 
