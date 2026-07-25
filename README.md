@@ -4,7 +4,9 @@ QA Case Study Lab is a portfolio dashboard for demonstrating practical QA, bug a
 
 The app presents a realistic e-commerce checkout case study: journey map, test case table, priority/status filters, release quality signals, latest test runs, linked bug reports, evidence notes, AI-generated suggestions, and markdown report export.
 
-![Design concept](docs/design-concept.png)
+[Live demo](https://madara66613.github.io/qa-case-study-lab/) | [Test plan](docs/test-plan.md) | [Bug report template](docs/bug-report-template.md)
+
+![QA Case Study Lab dashboard](output/playwright/qa-case-study-dashboard.png)
 
 ## Why This Project Helps
 
@@ -25,6 +27,7 @@ Hiring managers can quickly see that the candidate understands:
 - Case study navigation and skill tags
 - Journey map for checkout steps
 - Release quality signals calculated from test and defect data
+- Explicit GO, CONDITIONAL, or NO-GO release decision derived from quality signals
 - Test case table with priority and status filtering
 - Search across test IDs, titles, status, type, stage, and owner
 - Linked bug report inspector with metadata, steps, evidence, expected result, and actual result
@@ -81,10 +84,13 @@ npm run check
 
 ```text
 .github/workflows/ci.yml       GitHub Actions verification workflow
+.github/workflows/deploy-pages.yml  GitHub Pages live demo deployment
 docs/
   bug-report-template.md       Reusable bug report template
   design-concept.png           Original UI concept used for implementation
   test-plan.md                 Manual QA test plan
+output/playwright/
+  qa-case-study-dashboard.png  Verified desktop product screenshot
 src/
   App.tsx                      Main application composition and UI states
   App.css                      Product dashboard design system
@@ -102,15 +108,17 @@ e2e/
 - `npm run check` runs lint, typecheck, unit tests, e2e smoke tests, and build.
 - The dashboard is data-driven from typed fixtures.
 - QA metrics and release signals are calculated from test case and defect data rather than hardcoded in the UI.
+- The release recommendation is deterministic, explainable, and covered by unit tests.
 - AI suggestions are deterministic and testable, so the project works without an API key.
 - The design concept is included to show product/design process, not only code.
 
 ## CV Description
 
-QA Case Study Lab - built a React and TypeScript portfolio dashboard for an e-commerce checkout QA case study. Implemented risk-based test filtering, calculated QA metrics and release signals, linked bug report inspection, markdown report export, simulated test runs, deterministic AI test suggestions, unit tests, Playwright smoke tests, manual QA docs, and CI.
+QA Case Study Lab - built a deployed React and TypeScript QA dashboard for an e-commerce checkout case study. Implemented risk-based filtering, explainable release decisions, linked defect inspection, markdown report export, simulated test runs, deterministic AI test suggestions, unit tests, Playwright smoke tests, QA docs, CI, and GitHub Pages deployment.
 
-## Next Improvements
+## Recruiter Demo Flow
 
-- Add import/export for real test case CSV files.
-- Add a second case study with API-focused bug evidence.
-- Deploy a live demo and add the URL here.
+1. Search for `PayPal` and run the focused test set.
+2. Select `Expiration date in the past` to inspect its linked defect.
+3. Adopt an AI regression suggestion.
+4. Export the markdown report and review the NO-GO decision.

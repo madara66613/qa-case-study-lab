@@ -1,6 +1,5 @@
 import {
   AlertCircle,
-  Bell,
   Bot,
   Bug,
   CheckCircle2,
@@ -11,16 +10,13 @@ import {
   Filter,
   FlaskConical,
   Home,
-  LayoutDashboard,
-  Menu,
   PackageCheck,
   Play,
   Search,
-  Settings,
+  ShieldAlert,
   ShoppingCart,
   SlidersHorizontal,
   Smartphone,
-  SunMedium,
   TestTube2,
   UserRound,
   XCircle,
@@ -36,6 +32,7 @@ import {
 } from "./data";
 import {
   buildReportMarkdown,
+  calculateReleaseDecision,
   calculateQualitySignals,
   calculateSummary,
   createSimulatedRun,
@@ -166,7 +163,22 @@ function App() {
               onStatusChange={setStatusFilter}
               onSelectTest={setSelectedTestId}
             />
-            <TestRunsPanel runs={runs} />
+            <TestRunsPanel
+              runs={runs}
+              onInspectRun={(run) =>
+                setReportPreview(
+                  [
+                    `# ${run.id}`,
+                    "",
+                    `Scope: ${run.scope}`,
+                    `Started: ${run.startedAt}`,
+                    `Passed: ${run.passed}/${run.total}`,
+                    `Failed: ${run.failed}`,
+                    `Blocked: ${run.blocked}`,
+                  ].join("\n"),
+                )
+              }
+            />
           </div>
 
           <Inspector
@@ -203,13 +215,10 @@ function downloadMarkdownReport(filename: string, content: string) {
 
 function IconRail() {
   const navItems = [
-    Home,
-    FileText,
-    Bug,
-    FlaskConical,
-    LayoutDashboard,
-    Bot,
-    Settings,
+    { label: "Overview", href: "#journey-map", Icon: Home },
+    { label: "Test cases", href: "#test-cases", Icon: FlaskConical },
+    { label: "Bug report", href: "#bug-report", Icon: Bug },
+    { label: "AI suggestions", href: "#ai-suggestions", Icon: Bot },
   ];
 
   return (
@@ -218,15 +227,16 @@ function IconRail() {
         <PackageCheck size={24} strokeWidth={2.3} />
       </div>
       <nav className="rail-nav">
-        {navItems.map((Icon, index) => (
-          <button
+        {navItems.map(({ label, href, Icon }, index) => (
+          <a
             className={index === 0 ? "rail-button is-active" : "rail-button"}
-            key={Icon.displayName ?? index}
-            type="button"
-            aria-label={`Navigation item ${index + 1}`}
+            key={href}
+            href={href}
+            aria-label={label}
+            title={label}
           >
             <Icon size={19} />
-          </button>
+          </a>
         ))}
       </nav>
       <div className="rail-bottom">
@@ -257,7 +267,6 @@ function Sidebar({
       <section className="sidebar-section">
         <div className="sidebar-section-title">
           <span>Case studies</span>
-          <button type="button">+ New</button>
         </div>
 
         <div className="case-list">
@@ -266,10 +275,18 @@ function Sidebar({
               className={
                 caseStudy.id === selectedCaseId
                   ? "case-item is-selected"
-                  : "case-item"
+                  : caseStudy.id === "checkout"
+                    ? "case-item"
+                    : "case-item is-disabled"
               }
+              disabled={caseStudy.id !== "checkout"}
               key={caseStudy.id}
               onClick={() => onSelectCase(caseStudy.id)}
+              title={
+                caseStudy.id === "checkout"
+                  ? `Open ${caseStudy.title}`
+                  : `${caseStudy.title} is a portfolio roadmap item`
+              }
               type="button"
             >
               <CaseIcon title={caseStudy.title} />
@@ -288,7 +305,6 @@ function Sidebar({
       <section className="sidebar-section skill-section">
         <div className="sidebar-section-title">
           <span>Skill tags</span>
-          <button type="button">Edit</button>
         </div>
         {skillTags.map((tag) => (
           <div className="skill-row" key={tag.label}>
@@ -338,9 +354,6 @@ function TopBar({
   return (
     <header className="topbar">
       <div className="topbar-title">
-        <button type="button" className="icon-button" aria-label="Menu">
-          <Menu size={20} />
-        </button>
         <div>
           <h2>{selectedCase.title}</h2>
           <span className="status-pill">{selectedCase.status}</span>
@@ -366,12 +379,6 @@ function TopBar({
           <Download size={17} />
           Export Report
         </button>
-        <button className="icon-button has-alert" type="button" aria-label="Alerts">
-          <Bell size={19} />
-        </button>
-        <button className="icon-button" type="button" aria-label="Theme">
-          <SunMedium size={19} />
-        </button>
       </div>
     </header>
   );
@@ -394,7 +401,7 @@ function JourneyMap({
   ];
 
   return (
-    <section className="panel journey-panel">
+    <section className="panel journey-panel" id="journey-map">
       <div className="panel-title">Checkout journey map</div>
       <div className="journey">
         {journeySteps.map((step, index) => (
@@ -421,6 +428,7 @@ function JourneyMap({
 }
 
 function QualitySignalPanel({ signals }: { signals: QualitySignals }) {
+  const decision = calculateReleaseDecision(signals);
   const items = [
     {
       label: "Pass rate",
@@ -451,6 +459,14 @@ function QualitySignalPanel({ signals }: { signals: QualitySignals }) {
         <span className="panel-subtitle">
           Risk snapshot generated from typed test and defect fixtures
         </span>
+        <div className={`release-decision decision-${decision.tone}`}>
+          <ShieldAlert size={20} />
+          <div>
+            <span>Release decision</span>
+            <strong>{decision.status}</strong>
+            <small>{decision.reason}</small>
+          </div>
+        </div>
       </div>
       <div className="quality-grid">
         {items.map((item) => (
@@ -482,7 +498,7 @@ function TestCasePanel({
   onSelectTest: (id: string) => void;
 }) {
   return (
-    <section className="panel test-panel">
+    <section className="panel test-panel" id="test-cases">
       <div className="panel-heading">
         <div>
           <div className="panel-title">Test cases</div>
@@ -579,7 +595,13 @@ function TestCasePanel({
   );
 }
 
-function TestRunsPanel({ runs }: { runs: TestRun[] }) {
+function TestRunsPanel({
+  runs,
+  onInspectRun,
+}: {
+  runs: TestRun[];
+  onInspectRun: (run: TestRun) => void;
+}) {
   return (
     <section className="panel run-panel">
       <div className="panel-title">Test runs (latest)</div>
@@ -601,7 +623,9 @@ function TestRunsPanel({ runs }: { runs: TestRun[] }) {
               <span>
                 {run.passed}/{run.total} ({percent}%)
               </span>
-              <button type="button">View Details</button>
+              <button type="button" onClick={() => onInspectRun(run)}>
+                View Details
+              </button>
             </article>
           );
         })}
@@ -641,11 +665,17 @@ function Inspector({
 }) {
   return (
     <aside className="inspector">
-      <section className="panel bug-card">
+      <section className="panel bug-card" id="bug-report">
         <div className="inspector-kicker">Bug report</div>
         <div className="bug-head">
           <h2>{bug.id}</h2>
-          <button type="button">Open</button>
+          <button
+            type="button"
+            onClick={() => void navigator.clipboard?.writeText(bug.id)}
+            title={`Copy ${bug.id}`}
+          >
+            Copy ID
+          </button>
         </div>
         <h3>{bug.title}</h3>
 
@@ -693,7 +723,7 @@ function Inspector({
         </InspectorSection>
       </section>
 
-      <section className="panel suggestion-card">
+      <section className="panel suggestion-card" id="ai-suggestions">
         <div className="inspector-kicker">AI suggestions</div>
         <div className="suggestion-context">
           <TestTube2 size={18} />
