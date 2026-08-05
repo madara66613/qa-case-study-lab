@@ -80,7 +80,7 @@ export const testCases: TestCase[] = [
     priority: "P0",
     status: "Passed",
     stage: "Confirmation",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 10:15",
   },
   {
@@ -90,7 +90,7 @@ export const testCases: TestCase[] = [
     priority: "P0",
     status: "Failed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 10:15",
   },
   {
@@ -100,7 +100,7 @@ export const testCases: TestCase[] = [
     priority: "P1",
     status: "Passed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 09:58",
   },
   {
@@ -110,7 +110,7 @@ export const testCases: TestCase[] = [
     priority: "P1",
     status: "Passed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 09:58",
   },
   {
@@ -120,7 +120,7 @@ export const testCases: TestCase[] = [
     priority: "P1",
     status: "Failed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 09:45",
   },
   {
@@ -130,7 +130,7 @@ export const testCases: TestCase[] = [
     priority: "P2",
     status: "Passed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 09:30",
   },
   {
@@ -140,7 +140,7 @@ export const testCases: TestCase[] = [
     priority: "P2",
     status: "Blocked",
     stage: "Review",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 09:10",
   },
   {
@@ -150,7 +150,7 @@ export const testCases: TestCase[] = [
     priority: "P2",
     status: "Not Run",
     stage: "Review",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "-",
   },
   {
@@ -160,7 +160,7 @@ export const testCases: TestCase[] = [
     priority: "P3",
     status: "Passed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 08:50",
   },
   {
@@ -170,7 +170,7 @@ export const testCases: TestCase[] = [
     priority: "P3",
     status: "Not Run",
     stage: "Information",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "-",
   },
   {
@@ -180,7 +180,7 @@ export const testCases: TestCase[] = [
     priority: "P1",
     status: "Passed",
     stage: "Payment",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "Jul 21, 08:41",
   },
   {
@@ -190,7 +190,7 @@ export const testCases: TestCase[] = [
     priority: "P2",
     status: "Not Run",
     stage: "Review",
-    owner: "Denis",
+    owner: "Denys",
     lastRun: "-",
   },
 ];
@@ -202,7 +202,7 @@ export const bugReports: BugReport[] = [
     severity: "Major",
     priority: "P0",
     type: "Functional",
-    reportedBy: "Denis Dacenko",
+    reportedBy: "Denys Diachenko",
     reportedOn: "Jul 21, 2026 10:18",
     environment: "Chrome 126 / macOS 15",
     linkedTestCaseId: "TC-041",
@@ -237,7 +237,7 @@ export const bugReports: BugReport[] = [
     severity: "Major",
     priority: "P1",
     type: "Functional",
-    reportedBy: "Denis Dacenko",
+    reportedBy: "Denys Diachenko",
     reportedOn: "Jul 21, 2026 09:47",
     environment: "Firefox 128 / Windows 11",
     linkedTestCaseId: "TC-038",
@@ -271,7 +271,7 @@ export const bugReports: BugReport[] = [
     severity: "Minor",
     priority: "P2",
     type: "UI",
-    reportedBy: "Denis Dacenko",
+    reportedBy: "Denys Diachenko",
     reportedOn: "Jul 21, 2026 09:14",
     environment: "Safari 18 / iOS Simulator",
     linkedTestCaseId: "TC-036",
