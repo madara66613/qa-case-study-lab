@@ -1,124 +1,156 @@
 # QA Case Study Lab
 
-QA Case Study Lab is a portfolio dashboard for demonstrating practical QA, bug analysis, risk-based testing, and AI-assisted test design.
+A deployed React portfolio case study for manual, risk-based, and evidence-driven QA decision-making.
 
-The app presents a realistic e-commerce checkout case study: journey map, test case table, priority/status filters, release quality signals, latest test runs, linked bug reports, evidence notes, AI-generated suggestions, and markdown report export.
+[![CI](https://github.com/madara66613/qa-case-study-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/madara66613/qa-case-study-lab/actions/workflows/ci.yml)
+[![Deploy](https://github.com/madara66613/qa-case-study-lab/actions/workflows/deploy-pages.yml/badge.svg)](https://github.com/madara66613/qa-case-study-lab/actions/workflows/deploy-pages.yml)
 
-[Live demo](https://madara66613.github.io/qa-case-study-lab/) | [Test plan](docs/test-plan.md) | [Bug report template](docs/bug-report-template.md)
+[Open the live demo](https://madara66613.github.io/qa-case-study-lab/) · [Read the test plan](docs/test-plan.md) · [Use the bug-report template](docs/bug-report-template.md)
 
 ![QA Case Study Lab dashboard](output/playwright/qa-case-study-dashboard.png)
 
-## Why This Project Helps
+> The checkout product, test runs, defects, people, environments, and evidence metadata are fictional seed data created for this portfolio case study. They do not represent work for a real company or a production release.
 
-Hiring managers can quickly see that the candidate understands:
+## Problem
 
-- test case design and prioritization
-- P0/P1 risk thinking
-- defect reporting with reproduction steps
-- expected vs actual result writing
-- evidence-driven QA work
-- regression and smoke test runs
-- small AI-assisted workflow ideas
-- React, TypeScript, component state, filtering, tests, and CI
+QA portfolios often list tools without showing how a tester prioritizes risk, explains a release decision, connects defects to test coverage, or communicates evidence. This project turns those decisions into an interactive, reviewable case study.
 
-## Features
+## Implemented Features
 
-- Interactive checkout QA dashboard
-- Case study navigation and skill tags
-- Journey map for checkout steps
-- Release quality signals calculated from test and defect data
-- Explicit GO, CONDITIONAL, or NO-GO release decision derived from quality signals
-- Test case table with priority and status filtering
-- Search across test IDs, titles, status, type, stage, and owner
-- Linked bug report inspector with metadata, steps, evidence, expected result, and actual result
-- AI suggestion panel with adoptable actions
-- Simulated focused test runs
-- Markdown report preview and browser download
-- Unit and UI tests with Vitest and Testing Library
-- GitHub Actions CI workflow
+- Typed checkout test inventory with P0-P3 priority, execution status, stage, owner, and last-run context.
+- Search plus priority and status filtering.
+- Risk sorting and release signals derived from the current test and defect data.
+- Explainable `GO`, `CONDITIONAL`, or `NO-GO` recommendation.
+- Linked defect inspector with steps, expected/actual results, environment, and evidence notes.
+- Simulated focused smoke/regression runs for exploring reporting behavior.
+- Deterministic AI-style regression suggestions that can be adopted into the report.
+- Markdown report preview and browser download.
+- Responsive, accessible interface with desktop and mobile checks.
+- Unit/UI tests, Playwright smoke tests, CI, and GitHub Pages deployment.
 
-## Tech Stack
+## Technical Stack
 
-- React
-- TypeScript
+- React 19 and TypeScript
 - Vite
-- Vitest
-- Testing Library
+- Vitest and Testing Library
 - Playwright
 - Oxlint
 - Lucide React
+- GitHub Actions and GitHub Pages
 
-## Getting Started
+## Architecture
 
-Install dependencies:
+```mermaid
+flowchart LR
+    F["Typed fictional fixtures"] --> Q["Pure QA domain functions"]
+    Q --> S["Risk and release signals"]
+    Q --> R["Markdown report builder"]
+    Q --> A["Deterministic suggestions"]
+    F --> U["React dashboard state"]
+    S --> U
+    R --> U
+    A --> U
+    U --> D["Report download"]
+    T["Vitest + Playwright"] --> Q
+    T --> U
+```
+
+Metrics and release decisions are calculated from typed fixtures rather than hardcoded display values. The browser's **Run Tests** action simulates a new run record; it does not execute the repository's Playwright suite from the deployed page.
+
+## Testing and Quality
+
+`npm run check` runs:
+
+1. Oxlint
+2. TypeScript project validation
+3. Vitest unit and component tests
+4. Playwright desktop and mobile smoke checks
+5. Production build
+
+Playwright verifies the rendered dashboard, filtering and focused-run behavior, linked-defect/report export flow, and page-level mobile overflow. The same verification chain runs in CI.
+
+## Local Setup
+
+Requirements: Node.js 22 and npm.
 
 ```bash
+git clone https://github.com/madara66613/qa-case-study-lab.git
+cd qa-case-study-lab
 npm install
-```
-
-Run the app:
-
-```bash
 npm run dev
 ```
 
-Open:
+Open [http://localhost:5173](http://localhost:5173).
 
-```text
-http://localhost:5173
-```
+## Available Commands
 
-## Scripts
-
-```bash
-npm run dev
-npm run lint
-npm run typecheck
-npm run test
-npm run test:e2e
-npm run build
-npm run check
-```
+| Command | Purpose |
+| --- | --- |
+| `npm run dev` | Start the Vite development server |
+| `npm run lint` | Run Oxlint |
+| `npm run typecheck` | Validate the TypeScript projects |
+| `npm run test` | Run Vitest |
+| `npm run test:e2e` | Run Playwright smoke/responsive checks |
+| `npm run build` | Create the production bundle |
+| `npm run check` | Run the full local/CI verification chain |
 
 ## Project Structure
 
 ```text
-.github/workflows/ci.yml       GitHub Actions verification workflow
-.github/workflows/deploy-pages.yml  GitHub Pages live demo deployment
+.github/workflows/
+  ci.yml                       Full verification
+  deploy-pages.yml             GitHub Pages deployment
 docs/
-  bug-report-template.md       Reusable bug report template
-  design-concept.png           Original UI concept used for implementation
-  test-plan.md                 Manual QA test plan
-output/playwright/
-  qa-case-study-dashboard.png  Verified desktop product screenshot
-src/
-  App.tsx                      Main application composition and UI states
-  App.css                      Product dashboard design system
-  App.test.tsx                 Render and interaction tests
-  data.ts                      Case study, test case, run, and bug report data
-  qa.ts                        Filtering, summary, risk, report, and suggestion logic
-  qa.test.ts                   Domain logic tests
-  types.ts                     Shared TypeScript types
+  bug-report-template.md       Reusable defect template
+  design-concept.png           Original interface concept
+  test-plan.md                 Manual QA cases
 e2e/
-  dashboard.spec.ts            Playwright smoke and responsive checks
+  dashboard.spec.ts            Playwright journeys and responsive checks
+output/playwright/
+  qa-case-study-dashboard.png  Verified desktop screenshot
+src/
+  data.ts                      Fictional case, test, run, and defect fixtures
+  qa.ts                        Risk, filtering, release, reporting, suggestions
+  App.tsx                      Interactive dashboard
+  *.test.ts(x)                 Unit and component coverage
 ```
 
-## Quality Notes
+## Key Engineering Decisions
 
-- `npm run check` runs lint, typecheck, unit tests, e2e smoke tests, and build.
-- The dashboard is data-driven from typed fixtures.
-- QA metrics and release signals are calculated from test case and defect data rather than hardcoded in the UI.
-- The release recommendation is deterministic, explainable, and covered by unit tests.
-- AI suggestions are deterministic and testable, so the project works without an API key.
-- The design concept is included to show product/design process, not only code.
+- **Risk before decoration:** the main output is an explainable release recommendation, not a static metrics dashboard.
+- **Traceable defects:** each defect is linked to a specific test case and expected/actual behavior.
+- **Deterministic suggestions:** AI-style ideas remain reviewable and testable without an external model or API key.
+- **Seeded case study:** fictional data makes the scope safe to publish and repeat while avoiding claims about commercial work.
+- **Separate product and test actions:** simulated runs demonstrate UI/reporting state; repository tests remain real CLI/CI checks.
 
-## CV Description
+## Known Limitations
 
-QA Case Study Lab - built a deployed React and TypeScript QA dashboard for an e-commerce checkout case study. Implemented risk-based filtering, explainable release decisions, linked defect inspection, markdown report export, simulated test runs, deterministic AI test suggestions, unit tests, Playwright smoke tests, QA docs, CI, and GitHub Pages deployment.
+- The checkout system and all displayed execution evidence are fictional; the app does not connect to a real product or test environment.
+- Evidence filenames, console counts, and network notes are illustrative metadata. The referenced defect screenshots/logs are not committed artifacts.
+- **Run Tests** creates a deterministic simulated run and does not launch Playwright in the browser.
+- AI suggestions are rule-based, not generated by a live model.
+- There is no backend, authentication, persistence, issue-tracker integration, or collaborative workflow.
+- The interface has targeted accessibility checks but has not undergone a formal WCAG audit.
+
+## Roadmap
+
+- Attach committed, anonymized evidence artifacts to each fictional defect.
+- Import test results from a machine-readable fixture instead of only seeded TypeScript data.
+- Add automated accessibility scanning and keyboard-flow coverage.
+- Add report versioning and optional local persistence.
 
 ## Recruiter Demo Flow
 
-1. Search for `PayPal` and run the focused test set.
-2. Select `Expiration date in the past` to inspect its linked defect.
-3. Adopt an AI regression suggestion.
-4. Export the markdown report and review the NO-GO decision.
+1. Search for `PayPal` and run the focused set.
+2. Select `Expiration date in the past` and inspect the linked defect.
+3. Compare the release signals with the displayed `NO-GO` explanation.
+4. Adopt a regression suggestion and export the Markdown report.
+5. Open the repository test plan and Playwright spec to separate manual design from automation.
+
+## CV-Ready Description
+
+Built and deployed a React/TypeScript QA case-study dashboard with risk-based test design, linked defect analysis, explainable release decisions, report export, deterministic regression suggestions, Vitest coverage, Playwright smoke tests, CI, and GitHub Pages deployment.
+
+## License
+
+No open-source license has been added. The source is public for portfolio review; normal copyright restrictions apply.
